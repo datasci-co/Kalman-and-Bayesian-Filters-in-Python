@@ -16,7 +16,7 @@ for more information.
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
-import book_plots as bp
+import code.book_plots as bp
 from matplotlib.patches import Circle, Rectangle, Polygon, Arrow, FancyArrow
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,8 +40,9 @@ def plot_track_and_residuals(t, xs, z_xs, res):
     plt.title('residuals')
     plt.show()
 
+
 def plot_markov_chain():
-    plt.figure(figsize=(4,4), facecolor='w')
+    fig = plt.figure(figsize=(4,4), facecolor='w')
     ax = plt.axes((0, 0, 1, 1),
                   xticks=[], yticks=[], frameon=False)
     #ax.set_xlim(0, 10)
@@ -98,6 +99,7 @@ def plot_markov_chain():
 
     plt.axis('equal')
     plt.show()
+    bp.end_interactive(fig)
 
 
 def turning_target(N=600, turn_start=400):

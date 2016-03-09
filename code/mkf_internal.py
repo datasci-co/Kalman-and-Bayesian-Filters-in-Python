@@ -16,7 +16,8 @@ for more information.
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
-import book_plots as bp
+import code.book_plots as bp
+from code.book_plots import interactive_plot
 import filterpy.stats as stats
 from filterpy.stats import plot_covariance_ellipse
 from matplotlib.patches import Ellipse
@@ -79,46 +80,6 @@ def plot_track_ellipses(N, zs, ps, cov, title):
     plt.show()
 
 
-def show_residual_chart(show_eq=True, show_H=False):
-    est_y = ((164.2-158)*.8 + 158)
-
-    ax = plt.axes(xticks=[], yticks=[], frameon=False)
-    ax.annotate('', xy=[1,159], xytext=[0,158],
-                arrowprops=dict(arrowstyle='->',
-                                ec='r', lw=3, shrinkA=6, shrinkB=5))
-
-    ax.annotate('', xy=[1,159], xytext=[1,164.2],
-                arrowprops=dict(arrowstyle='-',
-                                ec='k', lw=3, shrinkA=8, shrinkB=8))
-
-    ax.annotate('', xy=(1., est_y), xytext=(0.9, est_y),
-                arrowprops=dict(arrowstyle='->', ec='#004080',
-                                lw=2,
-                                shrinkA=3, shrinkB=4))
-
-
-    plt.scatter ([0,1], [158.0,est_y], c='k',s=128)
-    plt.scatter ([1], [164.2], c='b',s=128)
-    plt.scatter ([1], [159], c='r', s=128)
-    plt.text (1.05, 158.8, r"prior $(\bar{x}_t)$", ha='center',va='top',fontsize=18,color='red')
-    plt.text (0.5, 159.6, "prediction", ha='center',va='top',fontsize=18,color='red')
-    plt.text (1.0, 164.4, r"measurement ($z$)",ha='center',va='bottom',fontsize=18,color='blue')
-    plt.text (0, 157.8, r"posterior ($x_{t-1}$)", ha='center', va='top',fontsize=18)
-    plt.text (1.02, est_y-1.5, "residual($y$)", ha='left', va='center',fontsize=18)
-    if show_eq:
-        if show_H:
-            plt.text (1.02, est_y-2.2, r"$y=z-H\bar x_t$", ha='left', va='center',fontsize=18)
-        else:
-            plt.text (1.02, est_y-2.2, r"$y=z-\bar x_t$", ha='left', va='center',fontsize=18)
-    plt.text (0.9, est_y, "new estimate ($x_t$)", ha='right', va='center',fontsize=18)
-    plt.text (0.8, est_y-0.5, "(posterior)", ha='right', va='center',fontsize=18)
-    if show_eq:
-        plt.text (0.75, est_y-1.2, r"$\bar{x}_t + Ky$", ha='right', va='center',fontsize=18)
-    plt.xlabel('time')
-    ax.yaxis.set_label_position("right")
-    plt.ylabel('state')
-    plt.xlim(-0.5, 1.5)
-    plt.show()
 
 
 def plot_gaussian_multiply():
@@ -391,7 +352,7 @@ def plot_3d_sampled_covariance(mean, cov):
                    for xx,yy in zip(np.ravel(xv), np.ravel(yv))])
     zv = zs.reshape(xv.shape)
 
-    ax = plt.figure().add_subplot(111, projection='3d')
+    ax = plt.gcf().add_subplot(111, projection='3d')
     ax.scatter(x,y, [0]*count, marker='.')
 
     ax.set_xlabel('X')
@@ -463,45 +424,46 @@ def plot_track(ps, actual, zs, cov, std_scale=1,
                xlabel='time', ylabel='position',
                title='Kalman Filter'):
 
-    count = len(zs)
-    zs = np.asarray(zs)
+    with interactive_plot():
+        count = len(zs)
+        zs = np.asarray(zs)
 
-    cov = np.asarray(cov)
-    std = std_scale*np.sqrt(cov[:,0,0])
-    std_top = np.minimum(actual+std, [count + 10])
-    std_btm = np.maximum(actual-std, [-50])
+        cov = np.asarray(cov)
+        std = std_scale*np.sqrt(cov[:,0,0])
+        std_top = np.minimum(actual+std, [count + 10])
+        std_btm = np.maximum(actual-std, [-50])
 
-    std_top = actual + std
-    std_btm = actual - std
+        std_top = actual + std
+        std_btm = actual - std
 
-    bp.plot_track(actual,c='k')
-    bp.plot_measurements(range(1, count + 1), zs)
-    bp.plot_filter(range(1, count + 1), ps)
+        bp.plot_track(actual,c='k')
+        bp.plot_measurements(range(1, count + 1), zs)
+        bp.plot_filter(range(1, count + 1), ps)
 
-    plt.plot(std_top, linestyle=':', color='k', lw=1, alpha=0.4)
-    plt.plot(std_btm, linestyle=':', color='k', lw=1, alpha=0.4)
-    plt.fill_between(range(len(std_top)), std_top, std_btm,
-                     facecolor='yellow', alpha=0.2, interpolate=True)
-    plt.legend(loc=4)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    if y_lim is not None:
-        plt.ylim(y_lim)
-    else:
-        plt.ylim((-50, count + 10))
+        plt.plot(std_top, linestyle=':', color='k', lw=1, alpha=0.4)
+        plt.plot(std_btm, linestyle=':', color='k', lw=1, alpha=0.4)
+        plt.fill_between(range(len(std_top)), std_top, std_btm,
+                         facecolor='yellow', alpha=0.2, interpolate=True)
+        plt.legend(loc=4)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        if y_lim is not None:
+            plt.ylim(y_lim)
+        else:
+            plt.ylim((-50, count + 10))
 
-    plt.xlim((0,count))
-    plt.title(title)
-    plt.show()
+        plt.xlim((0,count))
+        plt.title(title)
 
     if plot_P:
-        ax = plt.subplot(121)
-        ax.set_title("$\sigma^2_x$ (pos variance)")
-        plot_covariance(cov, (0, 0))
-        ax = plt.subplot(122)
-        ax.set_title("$\sigma^2_\dot{x}$ (vel variance)")
-        plot_covariance(cov, (1, 1))
-        plt.show()
+        with interactive_plot():
+            ax = plt.subplot(121)
+            ax.set_title("$\sigma^2_x$ (pos variance)")
+            plot_covariance(cov, (0, 0))
+            ax = plt.subplot(122)
+            ax.set_title("$\sigma^2_\dot{x}$ (vel variance)")
+            plot_covariance(cov, (1, 1))
+
 
 def plot_covariance(P, index=(0, 0)):
     ps = []
